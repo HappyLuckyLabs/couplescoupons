@@ -1,0 +1,253 @@
+// Couples Coupons - Database Schema
+// Complete data model for the couples coupon platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// COUPON PACKS & TEMPLATES
+// ============================================================
+
+model CouponPack {
+  id             String   @id @default(uuid())
+  slug           String   @unique
+  name           String
+  title          String?
+  tagline        String?
+  description    String?  @db.Text
+  iconUrl        String?  @map("icon_url")
+
+  // Pricing for different currencies
+  priceAud       Decimal  @default(25.00) @map("price_aud") @db.Decimal(10, 2)
+  priceUsd       Decimal? @map("price_usd") @db.Decimal(10, 2)
+  priceEur       Decimal? @map("price_eur") @db.Decimal(10, 2)
+  priceGbp       Decimal? @map("price_gbp") @db.Decimal(10, 2)
+  currencySymbol String   @default("$") @map("currency_symbol")
+
+  // Pack status
+  isActive       Boolean  @default(true) @map("is_active")
+  isSeasonal     Boolean  @default(false) @map("is_seasonal")
+
+  // What's included bullets
+  whatsIncluded  String[] @map("whats_included")
+
+  displayOrder   Int      @default(0) @map("display_order")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  coupons        CouponTemplate[]
+  orders         Order[]
+
+  @@map("cc_coupon_packs")
+}
+
+model CouponTemplate {
+  id           String   @id @default(uuid())
+  packId       String   @map("pack_id")
+  title        String
+  description  String   @db.Text
+  iconUrl      String?  @map("icon_url")
+  tip          String?  @db.Text
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  pack         CouponPack   @relation(fields: [packId], references: [id], onDelete: Cascade)
+  userCoupons  UserCoupon[]
+
+  @@map("cc_coupon_templates")
+}
+
+// ============================================================
+// ORDERS & USER COUPONS
+// ============================================================
+
+enum OrderStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
+model Order {
+  id                      String      @id @default(uuid())
+  orderNumber             String      @unique @map("order_number")
+  accessCode              String      @unique @map("access_code")
+  accessUrl               String      @unique @map("access_url")
+
+  // Buyer information (no user account required)
+  buyerEmail              String      @map("buyer_email")
+  buyerName               String      @map("buyer_name")
+
+  // Recipient information
+  receiverName            String      @map("receiver_name")
+  customMessage           String?     @db.Text @map("custom_message")
+
+  // Pack information (denormalized for historical record)
+  packId                  String      @map("pack_id")
+  packName                String      @map("pack_name")
+  packPrice               Decimal     @map("pack_price") @db.Decimal(10, 2)
+  currencyCode            String      @default("AUD") @map("currency_code")
+
+  // Payment via Stripe
+  stripeSessionId         String?     @map("stripe_session_id")
+  stripePaymentIntentId   String?     @map("stripe_payment_intent_id")
+  promoCode               String?     @map("promo_code")
+  discountAmount          Decimal     @default(0) @map("discount_amount") @db.Decimal(10, 2)
+  finalAmount             Decimal     @map("final_amount") @db.Decimal(10, 2)
+  status                  OrderStatus @default(pending)
+
+  // PDF card generation
+  pdfUrl                  String?     @map("pdf_url")
+  qrCodeUrl               String?     @map("qr_code_url")
+  pdfGeneratedAt          DateTime?   @map("pdf_generated_at")
+
+  // Email delivery tracking
+  confirmationEmailSentAt DateTime?   @map("confirmation_email_sent_at")
+  giftEmailSentAt         DateTime?   @map("gift_email_sent_at")
+
+  createdAt               DateTime    @default(now()) @map("created_at")
+  updatedAt               DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  pack                    CouponPack  @relation(fields: [packId], references: [id])
+  userCoupons             UserCoupon[]
+
+  @@index([accessCode])
+  @@index([buyerEmail])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("cc_orders")
+}
+
+model UserCoupon {
+  id               String    @id @default(uuid())
+  orderId          String    @map("order_id")
+  couponTemplateId String    @map("coupon_template_id")
+
+  // Snapshot of coupon at purchase time (denormalized)
+  title            String
+  description      String    @db.Text
+  iconUrl          String?   @map("icon_url")
+  tip              String?   @db.Text
+
+  // Redemption tracking
+  isRedeemed       Boolean   @default(false) @map("is_redeemed")
+  redeemedAt       DateTime? @map("redeemed_at")
+
+  displayOrder     Int       @default(0) @map("display_order")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  order            Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  couponTemplate   CouponTemplate @relation(fields: [couponTemplateId], references: [id])
+
+  @@unique([orderId, couponTemplateId])
+  @@index([orderId])
+  @@index([isRedeemed])
+  @@index([redeemedAt])
+  @@map("cc_user_coupons")
+}
+
+// ============================================================
+// PROMO CODES
+// ============================================================
+
+enum PromoType {
+  percentage
+  fixed_amount
+  free_shipping
+}
+
+model PromoCode {
+  id            String    @id @default(uuid())
+  code          String    @unique
+  description   String?   @db.Text
+  discountType  PromoType @map("discount_type")
+  discountValue Decimal   @map("discount_value") @db.Decimal(10, 2)
+  maxUses       Int?      @map("max_uses")
+  timesUsed     Int       @default(0) @map("times_used")
+  validFrom     DateTime? @map("valid_from")
+  validUntil    DateTime? @map("valid_until")
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([code])
+  @@map("cc_promo_codes")
+}
+
+// ============================================================
+// NEWSLETTER & MARKETING
+// ============================================================
+
+model Subscriber {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  isSubscribed   Boolean   @default(true) @map("is_subscribed")
+  subscribedAt   DateTime  @default(now()) @map("subscribed_at")
+  unsubscribedAt DateTime? @map("unsubscribed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@map("cc_subscribers")
+}
+
+// ============================================================
+// CONTENT MANAGEMENT
+// ============================================================
+
+model Faq {
+  id           String   @id @default(uuid())
+  question     String   @db.Text
+  answer       String   @db.Text
+  displayOrder Int      @default(0) @map("display_order")
+  isPublished  Boolean  @default(true) @map("is_published")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("cc_faqs")
+}
+
+model BlogPost {
+  id                String    @id @default(uuid())
+  slug              String    @unique
+  title             String
+  shortDescription  String?   @db.Text @map("short_description")
+  content           String    @db.Text
+  featuredImageUrl  String?   @map("featured_image_url")
+  publishedDate     DateTime? @map("published_date") @db.Date
+  isPublished       Boolean   @default(false) @map("is_published")
+  views             Int       @default(0)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@map("cc_blog_posts")
+}
+
+// ============================================================
+// CURRENCY & LOCALIZATION
+// ============================================================
+
+model CurrencyMapping {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  name      String
+  symbol    String
+  region    String?
+  countries String[]
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("cc_currency_mappings")
+}
