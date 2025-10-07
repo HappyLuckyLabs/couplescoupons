@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { sendRedemptionNotification } from "@/lib/email";
+import { sendRedemptionNotification } from "@/lib/email-postmark";
 
 export async function POST(
   req: NextRequest,

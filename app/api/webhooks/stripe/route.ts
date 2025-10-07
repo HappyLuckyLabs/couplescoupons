@@ -4,7 +4,7 @@ import Stripe from "stripe";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { generateQRCode } from "@/lib/pdf";
-import { sendOrderConfirmation, sendGiftDelivery } from "@/lib/email";
+import { sendOrderConfirmation, sendGiftDelivery } from "@/lib/email-postmark";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
