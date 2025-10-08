@@ -63,7 +63,11 @@ export const db = {
       }
 
       const { data: pack, error } = await query.single();
-      if (error) throw error;
+      if (error) {
+        // PGRST116 means no rows found, return null instead of throwing
+        if (error.code === 'PGRST116') return null;
+        throw error;
+      }
 
       // If include coupons
       if (include?.coupons && pack) {
@@ -124,7 +128,11 @@ export const db = {
       }
 
       const { data: order, error } = await query.single();
-      if (error) throw error;
+      if (error) {
+        // PGRST116 means no rows found, return null instead of throwing
+        if (error.code === 'PGRST116') return null;
+        throw error;
+      }
 
       // If include pack
       if (include?.pack && order) {
@@ -209,7 +217,11 @@ export const db = {
         .eq("id", where.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // PGRST116 means no rows found, return null instead of throwing
+        if (error.code === 'PGRST116') return null;
+        throw error;
+      }
 
       // If include order
       if (include?.order && coupon) {
