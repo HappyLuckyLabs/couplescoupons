@@ -35,7 +35,7 @@ export default async function FaqPage() {
         <section className="py-20">
           <div className="container mx-auto px-6 max-w-3xl">
             <div className="space-y-8">
-              {faqs.map((faq) => (
+              {faqs.map((faq: { id: string; question: string; answer: string }) => (
                 <div key={faq.id} className="bg-white rounded-2xl p-8 shadow-sm border border-neutral-100">
                   <h2 className="text-2xl font-bold mb-4 text-neutral-900">
                     {faq.question}

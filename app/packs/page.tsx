@@ -30,7 +30,7 @@ export default async function PacksPage() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {packs.map((pack) => (
+              {packs.map((pack: { id: string; name: string; description: string; slug: string; price: number; whatsIncluded: string[] }) => (
                 <Card key={pack.id} className="group hover:shadow-2xl transition-all hover:-translate-y-1">
                   <CardHeader>
                     <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-peach-100 to-primary-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
@@ -52,7 +52,7 @@ export default async function PacksPage() {
                     <div className="space-y-2 mb-6">
                       <p className="font-semibold text-sm text-neutral-700">What's included:</p>
                       <ul className="text-sm text-neutral-600 space-y-1">
-                        {pack.whatsIncluded.map((item, i) => (
+                        {pack.whatsIncluded.map((item: string, i: number) => (
                           <li key={i} className="flex items-start">
                             <span className="text-primary-500 mr-2">✓</span>
                             {item}

@@ -104,7 +104,7 @@ export default async function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {packs.map((pack) => (
+            {packs.map((pack: { id: string; name: string; description: string; slug: string; price: number }) => (
               <Card key={pack.id} className="group hover:shadow-xl transition-shadow">
                 <CardHeader>
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-peach-100 to-primary-100 flex items-center justify-center mb-4">
