@@ -6,6 +6,9 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { prisma } from "@/lib/db";
 
+// Disable static generation to avoid build-time database access
+export const dynamic = 'force-dynamic';
+
 export default async function PacksPage() {
   const packs = await prisma.couponPack.findMany({
     where: { isActive: true },

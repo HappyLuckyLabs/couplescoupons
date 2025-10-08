@@ -7,6 +7,9 @@ export const metadata = {
   description: "Frequently asked questions about Couples Coupons, our digital coupon packs, and how they work.",
 };
 
+// Disable static generation to avoid build-time database access
+export const dynamic = 'force-dynamic';
+
 export default async function FaqPage() {
   const faqs = await prisma.faq.findMany({
     where: { isPublished: true },
