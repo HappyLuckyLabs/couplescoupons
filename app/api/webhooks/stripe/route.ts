@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import Stripe from "stripe";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 import { generateQRCode } from "@/lib/pdf";
 import { sendOrderConfirmation, sendGiftDelivery } from "@/lib/email-postmark";
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const order = await prisma.order.findUnique({
+      const order = await db.order.findUnique({
         where: { id: orderId },
         include: { pack: true },
       });
@@ -50,14 +50,14 @@ export async function POST(req: NextRequest) {
       const qrCodeDataUrl = await generateQRCode(order.accessUrl);
 
       // Create user coupons from templates
-      const couponTemplates = await prisma.couponTemplate.findMany({
+      const couponTemplates = await db.couponTemplate.findMany({
         where: { packId: order.packId },
         orderBy: { displayOrder: "asc" },
       });
 
       await Promise.all(
         couponTemplates.map((template) =>
-          prisma.userCoupon.create({
+          db.userCoupon.create({
             data: {
               orderId: order.id,
               couponTemplateId: template.id,
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
       );
 
       // Update order
-      await prisma.order.update({
+      await db.order.update({
         where: { id: order.id },
         data: {
           status: "paid",

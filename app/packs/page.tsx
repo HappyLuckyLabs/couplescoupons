@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/supabase";
 
 // Disable static generation to avoid build-time database access
 export const dynamic = 'force-dynamic';
 
 export default async function PacksPage() {
-  const packs = await prisma.couponPack.findMany({
+  const packs = await db.couponPack.findMany({
     where: { isActive: true },
     orderBy: { displayOrder: "asc" },
   });

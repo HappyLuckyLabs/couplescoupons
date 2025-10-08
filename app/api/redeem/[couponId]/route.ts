@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/supabase";
 import { sendRedemptionNotification } from "@/lib/email-postmark";
 
 export async function POST(
@@ -8,7 +8,7 @@ export async function POST(
 ) {
   try {
     const { couponId } = await params;
-    const coupon = await prisma.userCoupon.findUnique({
+    const coupon = await db.userCoupon.findUnique({
       where: { id: couponId },
       include: { order: true },
     });
@@ -22,7 +22,7 @@ export async function POST(
     }
 
     // Mark as redeemed
-    const updatedCoupon = await prisma.userCoupon.update({
+    const updatedCoupon = await db.userCoupon.update({
       where: { id: couponId },
       data: {
         isRedeemed: true,

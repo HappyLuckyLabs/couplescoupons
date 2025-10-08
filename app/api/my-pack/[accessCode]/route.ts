@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/supabase";
 
 export async function GET(
   req: NextRequest,
@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { accessCode } = await params;
-    const order = await prisma.order.findUnique({
+    const order = await db.order.findUnique({
       where: { accessCode },
       include: {
         userCoupons: {

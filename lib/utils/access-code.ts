@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/supabase";
 
 // Generate a unique 6-character access code
 // Excludes confusing characters: 0, O, I, 1
@@ -18,7 +18,7 @@ export async function generateAccessCode(): Promise<string> {
     }
 
     // Check if code already exists
-    const existing = await prisma.order.findUnique({
+    const existing = await db.order.findUnique({
       where: { accessCode: code },
     });
 

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/supabase";
 
 // Disable static generation to avoid build-time database access
 export const dynamic = 'force-dynamic';
@@ -16,7 +16,7 @@ export default async function PackDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const pack = await prisma.couponPack.findUnique({
+  const pack = await db.couponPack.findUnique({
     where: { slug },
     include: {
       coupons: {

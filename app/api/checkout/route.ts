@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 import { generateAccessCode, generateOrderNumber } from "@/lib/utils/access-code";
 
@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const { packId, buyerName, buyerEmail, receiverName, customMessage, promoCode } = body;
 
     // Get pack
-    const pack = await prisma.couponPack.findUnique({
+    const pack = await db.couponPack.findUnique({
       where: { id: packId },
     });
 
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     let discountAmount = 0;
 
     if (promoCode) {
-      const promo = await prisma.promoCode.findUnique({
+      const promo = await db.promoCode.findUnique({
         where: { code: promoCode.toUpperCase() },
       });
 
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     const accessUrl = `${baseUrl}/my-pack/${accessCode}`;
 
     // Create pending order
-    const order = await prisma.order.create({
+    const order = await db.order.create({
       data: {
         orderNumber,
         accessCode,
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Update order with Stripe session ID
-    await prisma.order.update({
+    await db.order.update({
       where: { id: order.id },
       data: { stripeSessionId: session.id },
     });

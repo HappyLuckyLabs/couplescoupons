@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/supabase";
 
 export const metadata = {
   title: "FAQ | Couples Coupons",
@@ -11,7 +11,7 @@ export const metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function FaqPage() {
-  const faqs = await prisma.faq.findMany({
+  const faqs = await db.faq.findMany({
     where: { isPublished: true },
     orderBy: { displayOrder: "asc" },
   });
