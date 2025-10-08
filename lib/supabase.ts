@@ -31,10 +31,13 @@ function toCamelCase(obj: any): any {
 
 // Helper to convert camelCase to snake_case
 function toSnakeCase(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
   if (Array.isArray(obj)) {
     return obj.map(toSnakeCase);
   }
-  if (obj !== null && typeof obj === 'object') {
+  if (typeof obj === 'object' && !(obj instanceof Date)) {
     return Object.keys(obj).reduce((acc, key) => {
       const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
       acc[snakeKey] = toSnakeCase(obj[key]);

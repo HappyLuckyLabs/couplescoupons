@@ -55,22 +55,31 @@ export async function POST(req: NextRequest) {
         orderBy: { displayOrder: "asc" },
       });
 
-      await Promise.all(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        couponTemplates.map((template: any) =>
-          db.userCoupon.create({
-            data: {
-              orderId: order.id,
-              couponTemplateId: template.id,
-              title: template.title,
-              description: template.description,
-              iconUrl: template.iconUrl,
-              tip: template.tip,
-              displayOrder: template.displayOrder,
-            },
-          })
-        )
-      );
+      // Check if coupons already exist (webhook may be called multiple times)
+      const existingCoupons = await db.userCoupon.findMany({
+        where: { orderId: order.id },
+      });
+
+      if (existingCoupons.length === 0) {
+        await Promise.all(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          couponTemplates.map((template: any) =>
+            db.userCoupon.create({
+              data: {
+                orderId: order.id,
+                couponTemplateId: template.id,
+                title: template.title,
+                description: template.description,
+                iconUrl: template.iconUrl,
+                tip: template.tip,
+                displayOrder: template.displayOrder,
+                isRedeemed: false,
+                redeemedAt: null,
+              },
+            })
+          )
+        );
+      }
 
       // Update order
       await db.order.update({
