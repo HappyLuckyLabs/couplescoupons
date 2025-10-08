@@ -111,12 +111,18 @@ export const db = {
 
   order: {
     create: async ({ data }: any) => {
-      // Generate UUID if not provided (Prisma did this automatically)
-      const dataWithId = data.id ? data : { id: crypto.randomUUID(), ...data };
+      // Generate UUID and timestamps if not provided (Prisma did this automatically)
+      const now = new Date().toISOString();
+      const dataWithDefaults = {
+        id: crypto.randomUUID(),
+        createdAt: now,
+        updatedAt: now,
+        ...data,
+      };
 
       const { data: order, error } = await supabase
         .from("cc_orders")
-        .insert(toSnakeCase(dataWithId))
+        .insert(toSnakeCase(dataWithDefaults))
         .select()
         .single();
 
@@ -125,9 +131,15 @@ export const db = {
     },
 
     update: async ({ where, data }: any) => {
+      // Add updatedAt timestamp (Prisma @updatedAt did this automatically)
+      const dataWithTimestamp = {
+        ...data,
+        updatedAt: new Date().toISOString(),
+      };
+
       const { data: order, error } = await supabase
         .from("cc_orders")
-        .update(toSnakeCase(data))
+        .update(toSnakeCase(dataWithTimestamp))
         .eq("id", where.id)
         .select()
         .single();
@@ -201,12 +213,18 @@ export const db = {
 
   userCoupon: {
     create: async ({ data }: any) => {
-      // Generate UUID if not provided (Prisma did this automatically)
-      const dataWithId = data.id ? data : { id: crypto.randomUUID(), ...data };
+      // Generate UUID and timestamps if not provided (Prisma did this automatically)
+      const now = new Date().toISOString();
+      const dataWithDefaults = {
+        id: crypto.randomUUID(),
+        createdAt: now,
+        updatedAt: now,
+        ...data,
+      };
 
       const { data: coupon, error } = await supabase
         .from("cc_user_coupons")
-        .insert(toSnakeCase(dataWithId))
+        .insert(toSnakeCase(dataWithDefaults))
         .select()
         .single();
 
@@ -259,9 +277,15 @@ export const db = {
     },
 
     update: async ({ where, data }: any) => {
+      // Add updatedAt timestamp (Prisma @updatedAt did this automatically)
+      const dataWithTimestamp = {
+        ...data,
+        updatedAt: new Date().toISOString(),
+      };
+
       const { data: coupon, error } = await supabase
         .from("cc_user_coupons")
-        .update(toSnakeCase(data))
+        .update(toSnakeCase(dataWithTimestamp))
         .eq("id", where.id)
         .select()
         .single();
