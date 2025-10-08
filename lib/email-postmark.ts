@@ -106,7 +106,7 @@ export async function sendRedemptionNotification(
         coupon_title: coupon.title,
         coupon_description: coupon.description,
         coupon_tip: coupon.tip || "",
-        redeemed_at: coupon.redeemedAt?.toISOString() || new Date().toISOString(),
+        redeemed_at: coupon.redeemedAt || new Date().toISOString(),
       },
     });
 
