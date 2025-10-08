@@ -29,6 +29,21 @@ function toCamelCase(obj: any): any {
   return obj;
 }
 
+// Helper to convert camelCase to snake_case
+function toSnakeCase(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(toSnakeCase);
+  }
+  if (obj !== null && typeof obj === 'object') {
+    return Object.keys(obj).reduce((acc, key) => {
+      const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+      acc[snakeKey] = toSnakeCase(obj[key]);
+      return acc;
+    }, {} as any);
+  }
+  return obj;
+}
+
 // Database helper functions matching Prisma API
 export const db = {
   couponPack: {
@@ -98,7 +113,7 @@ export const db = {
     create: async ({ data }: any) => {
       const { data: order, error } = await supabase
         .from("cc_orders")
-        .insert(data)
+        .insert(toSnakeCase(data))
         .select()
         .single();
 
@@ -109,7 +124,7 @@ export const db = {
     update: async ({ where, data }: any) => {
       const { data: order, error } = await supabase
         .from("cc_orders")
-        .update(data)
+        .update(toSnakeCase(data))
         .eq("id", where.id)
         .select()
         .single();
@@ -185,7 +200,7 @@ export const db = {
     create: async ({ data }: any) => {
       const { data: coupon, error } = await supabase
         .from("cc_user_coupons")
-        .insert(data)
+        .insert(toSnakeCase(data))
         .select()
         .single();
 
@@ -240,7 +255,7 @@ export const db = {
     update: async ({ where, data }: any) => {
       const { data: coupon, error } = await supabase
         .from("cc_user_coupons")
-        .update(data)
+        .update(toSnakeCase(data))
         .eq("id", where.id)
         .select()
         .single();
