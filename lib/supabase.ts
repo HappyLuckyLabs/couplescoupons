@@ -38,7 +38,7 @@ export const db = {
       return data || [];
     },
 
-    findUnique: async ({ where, include }: { where: { id?: string; slug?: string }; include?: { coupons?: { take?: number } } }) => {
+    findUnique: async ({ where, include }: { where: { id?: string; slug?: string }; include?: { coupons?: { take?: number; orderBy?: { displayOrder?: string } } } }) => {
       let query = supabase.from("cc_coupon_packs").select("*");
 
       if (where.id) {
@@ -52,12 +52,21 @@ export const db = {
 
       // If include coupons
       if (include?.coupons && pack) {
-        const { data: coupons } = await supabase
+        let couponsQuery = supabase
           .from("cc_coupon_templates")
           .select("*")
-          .eq("pack_id", pack.id)
-          .order("display_order", { ascending: true })
-          .limit(include.coupons.take || 1000);
+          .eq("pack_id", pack.id);
+
+        if (include.coupons.orderBy?.displayOrder) {
+          const order = include.coupons.orderBy.displayOrder === "asc" ? true : false;
+          couponsQuery = couponsQuery.order("display_order", { ascending: order });
+        } else {
+          couponsQuery = couponsQuery.order("display_order", { ascending: true });
+        }
+
+        couponsQuery = couponsQuery.limit(include.coupons.take || 1000);
+
+        const { data: coupons } = await couponsQuery;
 
         return { ...pack, coupons: coupons || [] };
       }
