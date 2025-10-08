@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import Stripe from "stripe";
 import { db } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
-import { generateQRCode } from "@/lib/pdf";
+import { generateQRCode, generatePDFCard } from "@/lib/pdf";
 import { sendOrderConfirmation, sendGiftDelivery } from "@/lib/email-postmark";
 
 export async function POST(req: NextRequest) {
@@ -49,6 +49,9 @@ export async function POST(req: NextRequest) {
       // Generate QR code
       const qrCodeDataUrl = await generateQRCode(order.accessUrl);
 
+      // Generate PDF card
+      const pdfUrl = await generatePDFCard(order, qrCodeDataUrl);
+
       // Create user coupons from templates
       const couponTemplates = await db.couponTemplate.findMany({
         where: { packId: order.packId },
@@ -82,21 +85,22 @@ export async function POST(req: NextRequest) {
       }
 
       // Update order
-      await db.order.update({
+      const updatedOrder = await db.order.update({
         where: { id: order.id },
         data: {
           status: "paid",
           stripePaymentIntentId: session.payment_intent as string,
           qrCodeUrl: qrCodeDataUrl,
+          pdfUrl: pdfUrl,
           pdfGeneratedAt: new Date(),
           confirmationEmailSentAt: new Date(),
           giftEmailSentAt: new Date(),
         },
       });
 
-      // Send emails
-      await sendOrderConfirmation(order);
-      await sendGiftDelivery(order);
+      // Send emails with updated order (includes pdfUrl)
+      await sendOrderConfirmation(updatedOrder);
+      await sendGiftDelivery(updatedOrder);
 
       return NextResponse.json({ received: true });
     } catch (error) {
