@@ -1,5 +1,5 @@
 import QRCode from "qrcode";
-import { put } from "@vercel/blob";
+import { supabase } from "./supabase";
 import { Document, Page, Text, View, StyleSheet, Image, pdf } from "@react-pdf/renderer";
 import { createElement } from "react";
 
@@ -147,14 +147,29 @@ export async function generatePDFCard(
 
     const pdfBlob = await pdf(pdfDoc).toBlob();
 
-    // Upload to Vercel Blob
-    const filename = `gift-cards/${order.orderNumber}-${Date.now()}.pdf`;
-    const blob = await put(filename, pdfBlob, {
-      access: "public",
-      contentType: "application/pdf",
-    });
+    // Convert blob to ArrayBuffer
+    const arrayBuffer = await pdfBlob.arrayBuffer();
 
-    return blob.url;
+    // Upload to Supabase Storage
+    const filename = `gift-cards/${order.orderNumber}-${Date.now()}.pdf`;
+    const { data, error } = await supabase.storage
+      .from("pdfs")
+      .upload(filename, arrayBuffer, {
+        contentType: "application/pdf",
+        upsert: false,
+      });
+
+    if (error) {
+      console.error("Supabase storage upload error:", error);
+      throw error;
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from("pdfs")
+      .getPublicUrl(data.path);
+
+    return publicUrl;
   } catch (error) {
     console.error("Failed to generate PDF:", error);
     throw error;
