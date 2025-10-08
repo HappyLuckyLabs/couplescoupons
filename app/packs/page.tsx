@@ -30,7 +30,7 @@ export default async function PacksPage() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {packs.map((pack: { id: string; name: string; description: string; slug: string; price: number; whatsIncluded: string[] }) => (
+              {packs.map((pack: { id: string; name: string; description: string; slug: string; price: number; whatsIncluded: string[]; tagline: string; priceAud: number }) => (
                 <Card key={pack.id} className="group hover:shadow-2xl transition-all hover:-translate-y-1">
                   <CardHeader>
                     <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-peach-100 to-primary-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
