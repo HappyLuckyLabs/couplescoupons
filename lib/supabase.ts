@@ -14,6 +14,21 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   },
 });
 
+// Helper to convert snake_case to camelCase
+function toCamelCase(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(toCamelCase);
+  }
+  if (obj !== null && typeof obj === 'object') {
+    return Object.keys(obj).reduce((acc, key) => {
+      const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      acc[camelKey] = toCamelCase(obj[key]);
+      return acc;
+    }, {} as any);
+  }
+  return obj;
+}
+
 // Database helper functions matching Prisma API
 export const db = {
   couponPack: {
@@ -35,7 +50,7 @@ export const db = {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      return toCamelCase(data || []);
     },
 
     findUnique: async ({ where, include }: { where: { id?: string; slug?: string }; include?: { coupons?: { take?: number; orderBy?: { displayOrder?: string } } } }) => {
@@ -68,10 +83,10 @@ export const db = {
 
         const { data: coupons } = await couponsQuery;
 
-        return { ...pack, coupons: coupons || [] };
+        return toCamelCase({ ...pack, coupons: coupons || [] });
       }
 
-      return pack;
+      return toCamelCase(pack);
     },
   },
 
@@ -84,7 +99,7 @@ export const db = {
         .single();
 
       if (error) throw error;
-      return order;
+      return toCamelCase(order);
     },
 
     update: async ({ where, data }: any) => {
@@ -96,7 +111,7 @@ export const db = {
         .single();
 
       if (error) throw error;
-      return order;
+      return toCamelCase(order);
     },
 
     findUnique: async ({ where, include }: any) => {
@@ -119,10 +134,10 @@ export const db = {
           .eq("id", order.pack_id)
           .single();
 
-        return { ...order, pack };
+        return toCamelCase({ ...order, pack });
       }
 
-      return order;
+      return toCamelCase(order);
     },
   },
 
@@ -135,7 +150,7 @@ export const db = {
         .single();
 
       if (error) return null;
-      return data;
+      return toCamelCase(data);
     },
   },
 
@@ -154,7 +169,7 @@ export const db = {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      return toCamelCase(data || []);
     },
   },
 
@@ -167,7 +182,7 @@ export const db = {
         .single();
 
       if (error) throw error;
-      return coupon;
+      return toCamelCase(coupon);
     },
 
     findMany: async ({ where, orderBy }: any) => {
@@ -184,7 +199,7 @@ export const db = {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      return toCamelCase(data || []);
     },
 
     findUnique: async ({ where, include }: any) => {
@@ -204,10 +219,10 @@ export const db = {
           .eq("id", coupon.order_id)
           .single();
 
-        return { ...coupon, order };
+        return toCamelCase({ ...coupon, order });
       }
 
-      return coupon;
+      return toCamelCase(coupon);
     },
 
     update: async ({ where, data }: any) => {
@@ -219,7 +234,7 @@ export const db = {
         .single();
 
       if (error) throw error;
-      return coupon;
+      return toCamelCase(coupon);
     },
   },
 
@@ -238,7 +253,7 @@ export const db = {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      return toCamelCase(data || []);
     },
   },
 };

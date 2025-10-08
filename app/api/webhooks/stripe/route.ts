@@ -56,7 +56,8 @@ export async function POST(req: NextRequest) {
       });
 
       await Promise.all(
-        couponTemplates.map((template) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        couponTemplates.map((template: any) =>
           db.userCoupon.create({
             data: {
               orderId: order.id,
