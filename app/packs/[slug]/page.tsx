@@ -65,7 +65,7 @@ export default async function PackDetailPage({
               <Card className="p-8">
                 <h3 className="text-2xl font-bold mb-6">What's included</h3>
                 <ul className="space-y-3">
-                  {pack.whatsIncluded.map((item, i) => (
+                  {pack.whatsIncluded.map((item: string, i: number) => (
                     <li key={i} className="flex items-start">
                       <Check className="h-5 w-5 text-primary-500 mr-3 mt-0.5 flex-shrink-0" />
                       <span className="text-neutral-700">{item}</span>
