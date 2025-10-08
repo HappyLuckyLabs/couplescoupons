@@ -111,9 +111,12 @@ export const db = {
 
   order: {
     create: async ({ data }: any) => {
+      // Generate UUID if not provided (Prisma did this automatically)
+      const dataWithId = data.id ? data : { id: crypto.randomUUID(), ...data };
+
       const { data: order, error } = await supabase
         .from("cc_orders")
-        .insert(toSnakeCase(data))
+        .insert(toSnakeCase(dataWithId))
         .select()
         .single();
 
@@ -198,9 +201,12 @@ export const db = {
 
   userCoupon: {
     create: async ({ data }: any) => {
+      // Generate UUID if not provided (Prisma did this automatically)
+      const dataWithId = data.id ? data : { id: crypto.randomUUID(), ...data };
+
       const { data: coupon, error } = await supabase
         .from("cc_user_coupons")
-        .insert(toSnakeCase(data))
+        .insert(toSnakeCase(dataWithId))
         .select()
         .single();
 
