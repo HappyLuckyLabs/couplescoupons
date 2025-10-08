@@ -86,7 +86,7 @@ export default async function PackDetailPage({
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              {pack.coupons.map((coupon) => (
+              {pack.coupons.map((coupon: { id: string; title: string; description: string }) => (
                 <Card key={coupon.id} className="group hover:shadow-lg transition-shadow">
                   <CardContent className="pt-6">
                     <div className="w-16 h-16 rounded-full bg-peach-100 flex items-center justify-center mb-4">
