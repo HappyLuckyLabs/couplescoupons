@@ -102,7 +102,7 @@ export default function MyPackPage() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {order.userCoupons.map((coupon: { id: string; title: string; description: string; isRedeemed: boolean; redeemedAt: string | null }) => (
+              {order.userCoupons.map((coupon: { id: string; title: string; description: string; isRedeemed: boolean; redeemedAt: string | null; tip: string | null }) => (
                 <Card
                   key={coupon.id}
                   className={`${
