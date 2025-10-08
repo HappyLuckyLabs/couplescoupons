@@ -167,6 +167,8 @@ export const db = {
         throw error;
       }
 
+      let result = order;
+
       // If include pack
       if (include?.pack && order) {
         const { data: pack } = await supabase
@@ -175,10 +177,26 @@ export const db = {
           .eq("id", order.pack_id)
           .single();
 
-        return toCamelCase({ ...order, pack });
+        result = { ...result, pack };
       }
 
-      return toCamelCase(order);
+      // If include userCoupons
+      if (include?.userCoupons && order) {
+        let couponsQuery = supabase
+          .from("cc_user_coupons")
+          .select("*")
+          .eq("order_id", order.id);
+
+        if (include.userCoupons.orderBy?.displayOrder) {
+          const orderDir = include.userCoupons.orderBy.displayOrder === "asc" ? true : false;
+          couponsQuery = couponsQuery.order("display_order", { ascending: orderDir });
+        }
+
+        const { data: userCoupons } = await couponsQuery;
+        result = { ...result, userCoupons: userCoupons || [] };
+      }
+
+      return toCamelCase(result);
     },
   },
 
