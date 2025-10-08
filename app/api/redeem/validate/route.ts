@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ valid: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Validation failed" }, { status: 500 });
   }
 }

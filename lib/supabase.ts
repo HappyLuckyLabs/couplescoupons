@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.SUPABASE_URL!;
@@ -16,7 +17,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
 // Database helper functions matching Prisma API
 export const db = {
   couponPack: {
-    findMany: async ({ where, orderBy, take }: any = {}) => {
+    findMany: async ({ where, orderBy, take }: { where?: { isActive?: boolean }; orderBy?: { displayOrder?: string }; take?: number } = {}) => {
       let query = supabase.from("cc_coupon_packs").select("*");
 
       if (where?.isActive !== undefined) {
@@ -37,7 +38,7 @@ export const db = {
       return data || [];
     },
 
-    findUnique: async ({ where, include }: any) => {
+    findUnique: async ({ where, include }: { where: { id?: string; slug?: string }; include?: { coupons?: { take?: number } } }) => {
       let query = supabase.from("cc_coupon_packs").select("*");
 
       if (where.id) {

@@ -37,7 +37,7 @@ export default function MyPackPage() {
       if (!response.ok) throw new Error("Failed to load coupons");
       const data = await response.json();
       setOrder(data);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load your coupons");
     } finally {
       setLoading(false);
@@ -58,7 +58,7 @@ export default function MyPackPage() {
 
       toast.success("Coupon redeemed! The gifter has been notified.");
       fetchOrder(); // Refresh
-    } catch (error) {
+    } catch {
       toast.error("Failed to redeem coupon");
     }
   };
